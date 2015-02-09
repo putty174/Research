@@ -1,0 +1,58 @@
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# =========================
+# Operating System Files
+# =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must ends with two \r.
+Icon
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+
+*.meta
+*.tmproj
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.userprefs
+*.log
+*.exe
+
+Research/Library/cache/*
+Research/Library/metadata/*
+Research/Library/previews/*
+Research/Library/ScriptAssemblies/*
+Research/Research_Data/*
+Research/Research2_Data/*
+Research/Research3_Data/*
+Research/Research4_Data/*
+Research/Research5_Data/*
