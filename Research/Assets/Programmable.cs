@@ -21,12 +21,13 @@ public class Programmable : MonoBehaviour {
 	bool move;
 	float nextStep;
 	Vector3 startPos;
+	Quaternion startOri;
 	Vector3 eulOri;
 	Quaternion ori;
 
 	// Use this for initialization
 	void Start () {
-		orders = 3;
+		orders = 10;
 		command = new string[orders];
 		for (int i = 0; i < orders; i++)
 						command [i] = "";
@@ -39,6 +40,9 @@ public class Programmable : MonoBehaviour {
 		cam = player.GetComponent<Camera> ();
 		obj = gameObject;
 		move = false;
+
+		startPos = obj.transform.position;
+		startOri = obj.transform.rotation;
 	}
 	
 	// Update is called once per frame
@@ -56,6 +60,10 @@ public class Programmable : MonoBehaviour {
 			obj.rigidbody.velocity = Vector3.zero;
 			obj.transform.position = new Vector3(Mathf.Round(obj.transform.position.x), obj.transform.position.y, Mathf.Round (obj.transform.position.z));
 			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
+		}
+		if (Mathf.Abs(Quaternion.Angle (gameObject.transform.rotation, startOri)) > 90.0f) {
+			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
+			obj.rigidbody.angularVelocity = Vector3.zero;
 		}
 		if (move) {
 			if (Time.time > nextStep) {
@@ -171,12 +179,14 @@ public class Programmable : MonoBehaviour {
 		else if (command [location].StartsWith ("move right"))
 			rigidbody.AddForce (transform.right * 200);
 		else if (command [location].StartsWith ("turn left")) {
+//			startOri = gameObject.transform.rotation;
 			eulOri.y -= 90;
-			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
+//			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
+			rigidbody.AddTorque(Vector3.up * -50);
 		}
 		else if (command [location].StartsWith ("turn right")) {
 			eulOri.y += 90;
-			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
+			rigidbody.AddTorque(Vector3.up * 50);
 		}
 		else if (command [location].StartsWith ("restart")) {
 			obj.transform.position = spawn;
@@ -209,7 +219,9 @@ public class Programmable : MonoBehaviour {
 			if(loops.Count == 0) {}
 			else
 				location = loops.Pop();
+		} else {
 		}
 		startPos = obj.transform.position;
+		startOri = obj.transform.rotation;
 	}
 }
