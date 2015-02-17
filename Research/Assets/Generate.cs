@@ -5,6 +5,7 @@ public class Generate : MonoBehaviour {
 	GameObject player;
 	public Vector3 spawn;
 	public static int numSpawn = 0;
+	public Texture2D tex;
 
 	// Use this for initialization
 	void Start () {
@@ -21,6 +22,7 @@ public class Generate : MonoBehaviour {
 			newSphere.AddComponent<Programmable>();
 			newSphere.GetComponent<Programmable>().spawn = spawn;
 			numSpawn ++;
+			newSphere.renderer.material.mainTexture = tex;
 			if(Application.loadedLevelName == "Scene2")
 				Dialogue.nextLine();
 		}
