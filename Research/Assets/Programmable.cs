@@ -26,7 +26,7 @@ public class Programmable : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		orders = 10;
+		orders = 3;
 		command = new string[orders];
 		for (int i = 0; i < orders; i++)
 						command [i] = "";
@@ -61,7 +61,7 @@ public class Programmable : MonoBehaviour {
 			if (Time.time > nextStep) {
 				analyze ();
 				location++;
-				nextStep = Time.time + 1.5f;
+				nextStep = Time.time + 0.8f;
 			}
 		}
 	}
@@ -81,30 +81,12 @@ public class Programmable : MonoBehaviour {
 			}
 			GUI.Box (new Rect (Screen.width * 0.05f, Screen.height * 0.05f, Screen.width * 0.9f, Screen.height * 0.9f), "Programming");
 
-			GUI.SetNextControlName("0");
-			command[0] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f, Screen.width * 0.35f, Screen.height * 0.05f), command[0]);
-			GUI.SetNextControlName("1");
-			command[1] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 1), Screen.width * 0.35f, Screen.height * 0.05f), command[1]);
-			GUI.SetNextControlName("2");
-			command[2] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 2), Screen.width * 0.35f, Screen.height * 0.05f), command[2]);
-			GUI.SetNextControlName("3");
-			command[3] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 3), Screen.width * 0.35f, Screen.height * 0.05f), command[3]);
-			GUI.SetNextControlName("4");
-			command[4] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 4), Screen.width * 0.35f, Screen.height * 0.05f), command[4]);
-			GUI.SetNextControlName("5");
-			command[5] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 5), Screen.width * 0.35f, Screen.height * 0.05f), command[5]);
-			GUI.SetNextControlName("6");
-			command[6] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 6), Screen.width * 0.35f, Screen.height * 0.05f), command[6]);
-			GUI.SetNextControlName("7");
-			command[7] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 7), Screen.width * 0.35f, Screen.height * 0.05f), command[7]);
-			GUI.SetNextControlName("8");
-			command[8] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 8), Screen.width * 0.35f, Screen.height * 0.05f), command[8]);
-			GUI.SetNextControlName("9");
-			command[9] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f+ (40f * 9), Screen.width * 0.35f, Screen.height * 0.05f), command[9]);
-
-			//place = int.Parse(GUI.GetNameOfFocusedControl());
+			for(int i = 0; i < orders; i++) {
+				GUI.SetNextControlName(i+"");
+				command[i] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f + (40f * i), Screen.width * 0.35f, Screen.height * 0.05f), command[i]);
+			}
 			int.TryParse(GUI.GetNameOfFocusedControl(),out place);
-			//Debug.Log (command);
+
 			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.2f, Screen.width * 0.07f, Screen.height * 0.07f), "forward")) {
 				command[place] = "forward;";
 				place++;
