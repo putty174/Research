@@ -140,8 +140,8 @@ public class Programmable : MonoBehaviour {
 				place++;
 				GUI.FocusControl(""+place);
 			}
-			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.5f, Screen.width * 0.07f, Screen.height * 0.07f), "loop")) {
-				command[place] = "loop:";
+			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.5f, Screen.width * 0.07f, Screen.height * 0.07f), "[x] loops")) {
+				command[place] += " loops;";
 				place++;
 				GUI.FocusControl(""+place);
 			}
@@ -215,10 +215,10 @@ public class Programmable : MonoBehaviour {
 			Vector3 lpos = new Vector3(obj.transform.position.x, obj.transform.position.y + 20f,obj.transform.position.z);
 			l.transform.position = lpos;
 		}
-		else if (command [location].StartsWith ("loop")) {
+		else if (command [location].EndsWith ("loops;")) {
 			string[] loopStr = command[location].Split(' ');
 			int times = 0;
-			int.TryParse(loopStr[1], out times);
+			int.TryParse(loopStr[0], out times);
 			for (int i = 0; i < times - 1; i++)
 				loops.Push(location);
 			Debug.Log(loops.Count);
