@@ -11,7 +11,6 @@ public class Programmable : MonoBehaviour {
 	int place;
 	int location;
 	public Vector3 spawn;
-	bool loop;
 	string dir = "";
 	int error = -1;
 	Stack<int> loops;
@@ -62,8 +61,6 @@ public class Programmable : MonoBehaviour {
 			if (Time.time > nextStep) {
 				analyze ();
 				location++;
-				if(loops.Count > 0)
-					location = loops.Peek ();
 				nextStep = Time.time + 1.5f;
 			}
 		}
@@ -83,10 +80,7 @@ public class Programmable : MonoBehaviour {
 					Destroy(lte);
 			}
 			GUI.Box (new Rect (Screen.width * 0.05f, Screen.height * 0.05f, Screen.width * 0.9f, Screen.height * 0.9f), "Programming");
-//			for(int i = 0; i < orders; i++) {
-//				Debug.Log(Screen.height * 0.1f + (0.1f * (float)i));
-//				command[i] = GUI.TextArea (new Rect (Screen.width * 0.55f, Screen.height * 0.1f + (40f * i), Screen.width * 0.35f, Screen.height * 0.05f), command[i]);
-//			}
+
 			GUI.SetNextControlName("0");
 			command[0] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f, Screen.width * 0.35f, Screen.height * 0.05f), command[0]);
 			GUI.SetNextControlName("1");
@@ -164,7 +158,7 @@ public class Programmable : MonoBehaviour {
 			reset = GUI.Toggle(new Rect(Screen.width*0.57f,Screen.height*0.87f,Screen.width*0.15f,Screen.height*0.5f), reset, "Reset robot when done");
 
 			if(GUI.Button(new Rect(Screen.width*0.8f,Screen.height*0.87f,Screen.width*0.07f,Screen.height*0.05f), "Clear")) {
-				for(int i = 0; i < 10; i++){
+				for(int i = 0; i < command.Length; i++){
 					command[i] = "";
 				}
 			}
@@ -186,58 +180,54 @@ public class Programmable : MonoBehaviour {
 	}
 
 	private void analyze() {
-			switch(command[location]){
-			case "forward;":
-				rigidbody.AddForce(transform.forward * 200);
-				break;
-			case "back;":
-				rigidbody.AddForce(transform.forward * -200);
-				break;
-			case "move left;":
-				rigidbody.AddForce(transform.right * -200);
-				break;
-			case "move right;":
-				rigidbody.AddForce(transform.right * 200);
-				break;
-			case "turn left;":
-				eulOri.y -= 90;
-				obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
-				break;
-			case "turn right;":
-				eulOri.y += 90;
-				obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
-				break;
-			case "restart;":
-				obj.transform.position = spawn;
-				obj.rigidbody.velocity = Vector3.zero;
-				obj.transform.rotation = Quaternion.Euler(0,0,0);
-				break;
-			case "loop:":
-				loops.Push (location+1);
-				break;
-			case "end;":
-				loops.Pop();
-				break;
-			case "light;":
-				rigidbody.AddForce(transform.up * 100);
-				GameObject l = new GameObject("Light");
-				l.tag = "ExtraLight";
-				l.AddComponent<Light>();
-				l.light.type = LightType.Spot;
-				l.transform.eulerAngles = new Vector3(90,0,0);
-				l.light.intensity = 8;
-				l.light.range = 21;
-				l.light.spotAngle = 40;
-				
-				Vector3 lpos = new Vector3(obj.transform.position.x, obj.transform.position.y + 20f,obj.transform.position.z);
-				l.transform.position = lpos;
-				break;
-			case "":
-				break;
-			default:
-				error = location;
-				break;
-			}
-			startPos = obj.transform.position;
+		if (command [location].StartsWith ("forward"))
+			rigidbody.AddForce (transform.forward * 200);
+		else if (command [location].StartsWith ("back"))
+			rigidbody.AddForce (transform.forward * -200);
+		else if (command [location].StartsWith ("move left"))
+			rigidbody.AddForce (transform.right * -200);
+		else if (command [location].StartsWith ("move right"))
+			rigidbody.AddForce (transform.right * 200);
+		else if (command [location].StartsWith ("turn left")) {
+			eulOri.y -= 90;
+			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
+		}
+		else if (command [location].StartsWith ("turn right")) {
+			eulOri.y += 90;
+			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
+		}
+		else if (command [location].StartsWith ("restart")) {
+			obj.transform.position = spawn;
+			obj.rigidbody.velocity = Vector3.zero;
+			obj.transform.rotation = Quaternion.Euler(0,0,0);
+		}
+		else if (command [location].StartsWith ("light")) {
+			rigidbody.AddForce(transform.up * 100);
+			GameObject l = new GameObject("Light");
+			l.tag = "ExtraLight";
+			l.AddComponent<Light>();
+			l.light.type = LightType.Spot;
+			l.transform.eulerAngles = new Vector3(90,0,0);
+			l.light.intensity = 8;
+			l.light.range = 21;
+			l.light.spotAngle = 40;
+			
+			Vector3 lpos = new Vector3(obj.transform.position.x, obj.transform.position.y + 20f,obj.transform.position.z);
+			l.transform.position = lpos;
+		}
+		else if (command [location].StartsWith ("loop")) {
+			string[] loopStr = command[location].Split(' ');
+			int times = 0;
+			int.TryParse(loopStr[1], out times);
+			for (int i = 0; i < times - 1; i++)
+				loops.Push(location);
+			Debug.Log(loops.Count);
+		}
+		else if (command [location].StartsWith ("end")) {
+			if(loops.Count == 0) {}
+			else
+				location = loops.Pop();
+		}
+		startPos = obj.transform.position;
 	}
 }
