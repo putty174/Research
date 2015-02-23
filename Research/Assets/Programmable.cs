@@ -11,19 +11,16 @@ public class Programmable : MonoBehaviour {
 	int place;
 	int location;
 	public Vector3 spawn;
-	string dir = "";
 	int error = -1;
-	Stack<int> loops;
+	Stack<KeyValuePair<int,int>> loops;
 
 	GameObject player;
-	Camera cam;
 	GameObject obj;
 	bool move;
 	float nextStep;
 	Vector3 startPos;
 	Quaternion startOri;
 	Vector3 eulOri;
-	Quaternion ori;
 
 	// Use this for initialization
 	void Start () {
@@ -32,12 +29,10 @@ public class Programmable : MonoBehaviour {
 		for (int i = 0; i < orders; i++)
 						command [i] = "";
 		place = 0;
-		loops = new Stack<int> ();
+		loops = new Stack<KeyValuePair<int,int>> ();
 
 		eulOri = new Vector3 (0, 0, 0);
-		ori = Quaternion.Euler (eulOri.x, eulOri.y, eulOri.z);
 		player = GameObject.FindGameObjectWithTag ("Player");
-		cam = player.GetComponent<Camera> ();
 		obj = gameObject;
 		move = false;
 
@@ -51,7 +46,7 @@ public class Programmable : MonoBehaviour {
 		Camera.main.GetComponent<MouseLook> ().enabled = !window;
 		if (Input.GetKeyDown (KeyCode.Tab)) {
 			window = !window;
-			if(Dialogue.lineNum == 1 && Application.loadedLevelName == "Scene2"){
+			if(Dialogue.lineNum == 0 && Application.loadedLevelName == "Level1"){
 				Dialogue.nextLine();
 			}
 		}
@@ -68,8 +63,7 @@ public class Programmable : MonoBehaviour {
 		if (move) {
 			if (Time.time > nextStep) {
 				analyze ();
-				location++;
-				nextStep = Time.time + 0.8f;
+				nextStep = Time.time + 0.5f;
 			}
 		}
 	}
@@ -151,9 +145,9 @@ public class Programmable : MonoBehaviour {
 				for(int i = 0; i < command.Length; i++){
 					command[i] = "";
 				}
+				GUI.FocusControl("0");
 			}
 			if(GUI.Button(new Rect(Screen.width * 0.35f, Screen.height * 0.8f, Screen.width * 0.1f, Screen.height * 0.1f), "Run")) {
-				//analyze(command);
 				location = 0;
 				move = true;
 				nextStep = Time.time + 1;
@@ -170,30 +164,40 @@ public class Programmable : MonoBehaviour {
 	}
 
 	private void analyze() {
-		if (command [location].StartsWith ("forward"))
+		Debug.Log (location + ": " + command[location]);
+		if (command [location].Trim ().StartsWith ("forward")) {
 			rigidbody.AddForce (transform.forward * 200);
-		else if (command [location].StartsWith ("back"))
-			rigidbody.AddForce (transform.forward * -200);
-		else if (command [location].StartsWith ("move left"))
-			rigidbody.AddForce (transform.right * -200);
-		else if (command [location].StartsWith ("move right"))
-			rigidbody.AddForce (transform.right * 200);
-		else if (command [location].StartsWith ("turn left")) {
-//			startOri = gameObject.transform.rotation;
-			eulOri.y -= 90;
-//			obj.transform.rotation = Quaternion.Euler(eulOri.x, eulOri.y, eulOri.z);
-			rigidbody.AddTorque(Vector3.up * -50);
+			location++;
 		}
-		else if (command [location].StartsWith ("turn right")) {
+		else if (command [location].Trim().StartsWith ("back")) {
+			rigidbody.AddForce (transform.forward * -200);
+			location++;
+		}
+		else if (command [location].Trim().StartsWith ("move left")) {
+			rigidbody.AddForce (transform.right * -200);
+			location++;
+		}
+		else if (command [location].Trim().StartsWith ("move right")) {
+			rigidbody.AddForce (transform.right * 200);
+			location++;
+		}
+		else if (command [location].Trim().StartsWith ("turn left")) {
+			eulOri.y -= 90;
+			rigidbody.AddTorque(Vector3.up * -50);
+			location++;
+		}
+		else if (command [location].Trim().StartsWith ("turn right")) {
 			eulOri.y += 90;
 			rigidbody.AddTorque(Vector3.up * 50);
+			location++;
 		}
-		else if (command [location].StartsWith ("restart")) {
+		else if (command [location].Trim().StartsWith ("restart")) {
 			obj.transform.position = spawn;
 			obj.rigidbody.velocity = Vector3.zero;
 			obj.transform.rotation = Quaternion.Euler(0,0,0);
+			location++;
 		}
-		else if (command [location].StartsWith ("light")) {
+		else if (command [location].Trim().StartsWith ("light")) {
 			rigidbody.AddForce(transform.up * 100);
 			GameObject l = new GameObject("Light");
 			l.tag = "ExtraLight";
@@ -206,19 +210,27 @@ public class Programmable : MonoBehaviour {
 			
 			Vector3 lpos = new Vector3(obj.transform.position.x, obj.transform.position.y + 20f,obj.transform.position.z);
 			l.transform.position = lpos;
+			location++;
 		}
-		else if (command [location].EndsWith ("loops;")) {
+		else if (command [location].Trim().EndsWith ("loops;")) {
 			string[] loopStr = command[location].Split(' ');
 			int times = 0;
 			int.TryParse(loopStr[0], out times);
-			for (int i = 0; i < times - 1; i++)
-				loops.Push(location);
-			Debug.Log(loops.Count);
+			loops.Push (new KeyValuePair<int,int>(location+1,times-1));
+			location++;
+			nextStep = Time.time + 0.01f;
 		}
-		else if (command [location].StartsWith ("end")) {
+		else if (command [location].Trim().StartsWith ("end")) {
 			if(loops.Count == 0) {}
-			else
-				location = loops.Pop();
+			else {
+				KeyValuePair<int,int> h = loops.Pop();
+				if(h.Value != 0) {
+					location = h.Key;
+					loops.Push(new KeyValuePair<int,int>(h.Key,h.Value-1));
+				} else
+					location++;
+			}
+			nextStep = Time.time + 0.01f;
 		} else {
 		}
 		startPos = obj.transform.position;
