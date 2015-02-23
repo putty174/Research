@@ -14,6 +14,9 @@ public class Programmable : MonoBehaviour {
 	Stack<KeyValuePair<int,int>> loops;
 	string loopval;
 
+    Stack<bool> ifs;
+	int ifstack;
+
 	GameObject player;
 	GameObject obj;
 	bool move;
@@ -31,6 +34,8 @@ public class Programmable : MonoBehaviour {
 		loopval = "";
 		place = 0;
 		loops = new Stack<KeyValuePair<int,int>> ();
+
+        ifs = new Stack<bool> ();
 
 		eulOri = new Vector3 (0, 0, 0);
 		player = GameObject.FindGameObjectWithTag ("Player");
@@ -173,73 +178,67 @@ public class Programmable : MonoBehaviour {
 	private void analyze() {
 		Debug.Log (location + ": " + command[location]);
 		if (command [location].Trim ().StartsWith ("forward")) {
-			rigidbody.AddForce (transform.forward * 200);
-			location++;
-		}
-		else if (command [location].Trim().StartsWith ("back")) {
-			rigidbody.AddForce (transform.forward * -200);
-			location++;
-		}
-		else if (command [location].Trim().StartsWith ("move left")) {
-			rigidbody.AddForce (transform.right * -200);
-			location++;
-		}
-		else if (command [location].Trim().StartsWith ("move right")) {
-			rigidbody.AddForce (transform.right * 200);
-			location++;
-		}
-		else if (command [location].Trim().StartsWith ("turn left")) {
-			eulOri.y -= 90;
-			rigidbody.AddTorque(Vector3.up * -50);
-			location++;
-		}
-		else if (command [location].Trim().StartsWith ("turn right")) {
-			eulOri.y += 90;
-			rigidbody.AddTorque(Vector3.up * 50);
-			location++;
-		}
-		else if (command [location].Trim().StartsWith ("restart")) {
-			obj.transform.position = spawn;
-			obj.rigidbody.velocity = Vector3.zero;
-			obj.transform.rotation = Quaternion.Euler(0,0,0);
-			location++;
-		}
-		else if (command [location].Trim().StartsWith ("light")) {
-			rigidbody.AddForce(transform.up * 100);
-			GameObject l = new GameObject("Light");
-			l.tag = "ExtraLight";
-			l.AddComponent<Light>();
-			l.light.type = LightType.Spot;
-			l.transform.eulerAngles = new Vector3(90,0,0);
-			l.light.intensity = 8;
-			l.light.range = 21;
-			l.light.spotAngle = 40;
+            rigidbody.AddForce (transform.forward * 200);
+            location++;
+        } else if (command [location].Trim ().StartsWith ("back")) {
+            rigidbody.AddForce (transform.forward * -200);
+            location++;
+        } else if (command [location].Trim ().StartsWith ("move left")) {
+            rigidbody.AddForce (transform.right * -200);
+            location++;
+        } else if (command [location].Trim ().StartsWith ("move right")) {
+            rigidbody.AddForce (transform.right * 200);
+            location++;
+        } else if (command [location].Trim ().StartsWith ("turn left")) {
+            eulOri.y -= 90;
+            rigidbody.AddTorque (Vector3.up * -50);
+            location++;
+        } else if (command [location].Trim ().StartsWith ("turn right")) {
+            eulOri.y += 90;
+            rigidbody.AddTorque (Vector3.up * 50);
+            location++;
+        } else if (command [location].Trim ().StartsWith ("restart")) {
+            obj.transform.position = spawn;
+            obj.rigidbody.velocity = Vector3.zero;
+            obj.transform.rotation = Quaternion.Euler (0, 0, 0);
+            location++;
+        } else if (command [location].Trim ().StartsWith ("light")) {
+            rigidbody.AddForce (transform.up * 100);
+            GameObject l = new GameObject ("Light");
+            l.tag = "ExtraLight";
+            l.AddComponent<Light> ();
+            l.light.type = LightType.Spot;
+            l.transform.eulerAngles = new Vector3 (90, 0, 0);
+            l.light.intensity = 8;
+            l.light.range = 21;
+            l.light.spotAngle = 40;
 			
-			Vector3 lpos = new Vector3(obj.transform.position.x, obj.transform.position.y + 20f,obj.transform.position.z);
-			l.transform.position = lpos;
-			location++;
-		}
-		else if (command [location].Trim().EndsWith ("loops;")) {
-			string[] loopStr = command[location].Split(' ');
-			int times = 0;
-			int.TryParse(loopStr[0], out times);
-			loops.Push (new KeyValuePair<int,int>(location+1,times-1));
-			location++;
-			nextStep = Time.time + 0.01f;
-		}
-		else if (command [location].Trim().StartsWith ("end")) {
-			if(loops.Count == 0) {}
-			else {
-				KeyValuePair<int,int> h = loops.Pop();
-				if(h.Value != 0) {
-					location = h.Key;
-					loops.Push(new KeyValuePair<int,int>(h.Key,h.Value-1));
-				} else
-					location++;
-			}
-			nextStep = Time.time + 0.01f;
-		} else {
-		}
+            Vector3 lpos = new Vector3 (obj.transform.position.x, obj.transform.position.y + 20f, obj.transform.position.z);
+            l.transform.position = lpos;
+            location++;
+        } else if (command [location].Trim ().EndsWith ("loops;")) {
+            string[] loopStr = command [location].Trim().Split (' ');
+            int times = 0;
+            int.TryParse (loopStr [0], out times);
+            loops.Push (new KeyValuePair<int,int> (location + 1, times - 1));
+            location++;
+            nextStep = Time.time + 0.01f;
+        } else if (command [location].Trim ().StartsWith ("end")) {
+            if (loops.Count == 0) {
+            } else {
+                KeyValuePair<int,int> h = loops.Pop ();
+                if (h.Value != 0) {
+                    location = h.Key;
+                    loops.Push (new KeyValuePair<int,int> (h.Key, h.Value - 1));
+                } else
+                    location++;
+            }
+            nextStep = Time.time + 0.01f;
+        } else if (command [location].Trim ().StartsWith ("if")) {
+            string[] ifStr = command[location].Split(' ');
+            bool yes = ((ifStr[2] == "is") || (ifStr[2] == "=="));
+
+        }
 		startPos = obj.transform.position;
 		startOri = obj.transform.rotation;
 	}
