@@ -11,8 +11,8 @@ public class Programmable : MonoBehaviour {
 	int place;
 	int location;
 	public Vector3 spawn;
-	int error = -1;
 	Stack<KeyValuePair<int,int>> loops;
+	string loopval;
 
 	GameObject player;
 	GameObject obj;
@@ -28,6 +28,7 @@ public class Programmable : MonoBehaviour {
 		command = new string[orders];
 		for (int i = 0; i < orders; i++)
 						command [i] = "";
+		loopval = "";
 		place = 0;
 		loops = new Stack<KeyValuePair<int,int>> ();
 
@@ -87,7 +88,8 @@ public class Programmable : MonoBehaviour {
 				GUI.SetNextControlName(i+"");
 				command[i] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f + (40f * i), Screen.width * 0.35f, Screen.height * 0.05f), command[i]);
 			}
-			int.TryParse(GUI.GetNameOfFocusedControl(),out place);
+			if(!(GUI.GetNameOfFocusedControl() == "loopval"))
+				int.TryParse(GUI.GetNameOfFocusedControl(),out place);
 
 			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.2f, Screen.width * 0.07f, Screen.height * 0.07f), "forward")) {
 				command[place] = "forward;";
@@ -124,10 +126,18 @@ public class Programmable : MonoBehaviour {
 				place++;
 				GUI.FocusControl(""+place);
 			}
+			GUI.SetNextControlName("loopval");
+			loopval = GUI.TextField (new Rect (Screen.width * 0.11f, Screen.height * 0.51f, Screen.width * 0.03f, Screen.height * 0.05f), loopval);
 			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.5f, Screen.width * 0.07f, Screen.height * 0.07f), "[x] loops")) {
+				if(GUI.GetNameOfFocusedControl() == "loopval") {
+					GUI.FocusControl(""+place);
+				}
+				if(!loopval.Equals(""))
+					command[place] += loopval;
 				command[place] += " loops;";
 				place++;
 				GUI.FocusControl(""+place);
+				Debug.Log ("Ha: " + place);
 			}
 			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.58f, Screen.width * 0.07f, Screen.height * 0.07f), "end")) {
 				command[place] = "end;";
@@ -157,10 +167,7 @@ public class Programmable : MonoBehaviour {
 				nextStep = Time.time;
 				window = false;
 			}
-		} else {
 		}
-		if(error != -1)
-			GUI.Box (new Rect (Screen.width * 0.35f, Screen.height * 0.4f, Screen.width * 0.3f, Screen.height * 0.2f), "Line " + error + ": Check spelling or syntax");
 	}
 
 	private void analyze() {
