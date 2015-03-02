@@ -13,6 +13,7 @@ public class Programmable : MonoBehaviour {
 	public Vector3 spawn;
 	Stack<KeyValuePair<int,int>> loops;
 	string loopval;
+    string colorval;
 
     Stack<bool> ifs;
 	int ifstack;
@@ -32,6 +33,7 @@ public class Programmable : MonoBehaviour {
 		for (int i = 0; i < orders; i++)
 						command [i] = "";
 		loopval = "";
+        colorval = "";
 		place = 0;
 		loops = new Stack<KeyValuePair<int,int>> ();
 
@@ -86,15 +88,20 @@ public class Programmable : MonoBehaviour {
 				GameObject[] lights = GameObject.FindGameObjectsWithTag("ExtraLight");
 				foreach(GameObject lte in lights)
 					Destroy(lte);
+                GameObject[] mark = GameObject.FindGameObjectsWithTag("Mark");
+                foreach(GameObject mk in mark)
+                    Destroy(mk);
 			}
 			GUI.Box (new Rect (Screen.width * 0.05f, Screen.height * 0.05f, Screen.width * 0.9f, Screen.height * 0.9f), "Programming");
 
 			for(int i = 0; i < orders; i++) {
-				GUI.SetNextControlName(i+"");
+				GUI.SetNextControlName("Index " + i);
 				command[i] = GUI.TextField (new Rect (Screen.width * 0.55f, Screen.height * 0.1f + (40f * i), Screen.width * 0.35f, Screen.height * 0.05f), command[i]);
 			}
-			if(!(GUI.GetNameOfFocusedControl() == "loopval"))
-				int.TryParse(GUI.GetNameOfFocusedControl(),out place);
+            if(GUI.GetNameOfFocusedControl().StartsWith("Index")){
+                string[] i = GUI.GetNameOfFocusedControl().Trim ().Split (' ');
+                place = int.Parse(i[1]);
+            }
 
 			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.2f, Screen.width * 0.07f, Screen.height * 0.07f), "forward")) {
 				command[place] = "forward;";
@@ -132,23 +139,29 @@ public class Programmable : MonoBehaviour {
 				GUI.FocusControl(""+place);
 			}
 			GUI.SetNextControlName("loopval");
-			loopval = GUI.TextField (new Rect (Screen.width * 0.11f, Screen.height * 0.51f, Screen.width * 0.03f, Screen.height * 0.05f), loopval);
+			loopval = GUI.TextField (new Rect (Screen.width * 0.11f, Screen.height * 0.51f, Screen.width * 0.03f, Screen.height * 0.04f), loopval);
 			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.5f, Screen.width * 0.07f, Screen.height * 0.07f), "[x] loops")) {
-				if(GUI.GetNameOfFocusedControl() == "loopval") {
-					GUI.FocusControl(""+place);
-				}
 				if(!loopval.Equals(""))
 					command[place] += loopval;
 				command[place] += " loops;";
 				place++;
 				GUI.FocusControl(""+place);
-				Debug.Log ("Ha: " + place);
 			}
-			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.58f, Screen.width * 0.07f, Screen.height * 0.07f), "end")) {
-				command[place] = "end;";
-				place++;
-				GUI.FocusControl(""+place);
-			}
+            if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.58f, Screen.width * 0.07f, Screen.height * 0.07f), "end")) {
+                command[place] = "end;";
+                place++;
+                GUI.FocusControl(""+place);
+            }
+            GUI.SetNextControlName("colorval");
+            colorval = GUI.TextField (new Rect(Screen.width * 0.25f, Screen.height * 0.58f, Screen.width * 0.07f, Screen.height * 0.04f), colorval);
+            if(GUI.Button(new Rect(Screen.width * 0.25f, Screen.height * 0.5f, Screen.width * 0.07f, Screen.height * 0.07f), "Mark [Color]")) {
+                if(!colorval.Equals(""))
+                    command[place] += colorval;
+                command[place] = "Mark: " + colorval + ";";
+                place++;
+                GUI.FocusControl(""+place);
+            }
+			
 			if(GUI.Button(new Rect(Screen.width * 0.15f, Screen.height * 0.7f, Screen.width * 0.07f, Screen.height * 0.07f), "restart")) {
 				command[place] = "restart;";
 				place++;
@@ -172,11 +185,13 @@ public class Programmable : MonoBehaviour {
 				nextStep = Time.time;
 				window = false;
 			}
+            if (place == orders)
+                place = 0;
 		}
 	}
 
 	private void analyze() {
-		Debug.Log (location + ": " + command[location]);
+		//Debug.Log (location + ": " + command[location]);
 		if (command [location].Trim ().StartsWith ("forward")) {
             rigidbody.AddForce (transform.forward * 200);
             location++;
@@ -217,7 +232,7 @@ public class Programmable : MonoBehaviour {
             l.transform.position = lpos;
             location++;
         } else if (command [location].Trim ().EndsWith ("loops;")) {
-            string[] loopStr = command [location].Trim().Split (' ');
+            string[] loopStr = command [location].Trim ().Split (' ');
             int times = 0;
             int.TryParse (loopStr [0], out times);
             loops.Push (new KeyValuePair<int,int> (location + 1, times - 1));
@@ -235,9 +250,44 @@ public class Programmable : MonoBehaviour {
             }
             nextStep = Time.time + 0.01f;
         } else if (command [location].Trim ().StartsWith ("if")) {
-            string[] ifStr = command[location].Split(' ');
-            bool yes = ((ifStr[2] == "is") || (ifStr[2] == "=="));
+            string[] ifStr = command [location].Split (' ');
+            bool yes = ((ifStr [2] == "is") || (ifStr [2] == "=="));
 
+        } else if (command [location].Trim ().StartsWith ("Mark:")) {
+            string[] colorStr = command [location].Trim ().Split (' ');
+            string color = colorStr[1];
+            Debug.Log (color);
+            GameObject newMark = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            newMark.tag = "Mark";
+            newMark.transform.position = new Vector3(gameObject.transform.position.x, 0.01f, gameObject.transform.position.z);
+            newMark.transform.localScale = new Vector3(0.1f,0.1f,0.1f);
+            newMark.AddComponent<Rigidbody>();
+            newMark.rigidbody.useGravity = false;
+            if(color.StartsWith("r") || color.StartsWith("R"))
+                newMark.renderer.material.color = Color.red;
+            else if(color.StartsWith("o") || color.StartsWith("R"))
+                newMark.renderer.material.color = new Color(1f, 0.647f, 0f);
+            else if(color.StartsWith("y") || color.StartsWith("Y"))
+                newMark.renderer.material.color = Color.yellow;
+            else if(color.StartsWith("gree") || color.StartsWith("Gree"))
+                newMark.renderer.material.color = Color.green;
+            else if(color.StartsWith("bl") || color.StartsWith("Bl"))
+                newMark.renderer.material.color = Color.blue;
+            else if(color.StartsWith("p") || color.StartsWith("p"))
+                newMark.renderer.material.color = new Color(0.545f, 0f, 0.8f);
+            else if(color.StartsWith("bl") || color.StartsWith("Bl"))
+                newMark.renderer.material.color = Color.black;
+            else if(color.StartsWith("w") || color.StartsWith("W"))
+                newMark.renderer.material.color = Color.white;
+            else if(color.StartsWith("c") || color.StartsWith("C"))
+                newMark.renderer.material.color = Color.cyan;
+            else if(color.StartsWith("gra") || color.StartsWith("Gra"))
+                newMark.renderer.material.color = Color.gray;
+            else if(color.StartsWith("grey") || color.StartsWith("Grey"))
+                newMark.renderer.material.color = Color.grey;
+            else if(color.StartsWith("m") || color.StartsWith("m"))
+                newMark.renderer.material.color = Color.magenta;
+            location++;
         }
 		startPos = obj.transform.position;
 		startOri = obj.transform.rotation;
