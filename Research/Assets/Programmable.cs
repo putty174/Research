@@ -154,10 +154,10 @@ public class Programmable : MonoBehaviour {
             }
             GUI.SetNextControlName("colorval");
             colorval = GUI.TextField (new Rect(Screen.width * 0.25f, Screen.height * 0.58f, Screen.width * 0.07f, Screen.height * 0.04f), colorval);
-            if(GUI.Button(new Rect(Screen.width * 0.25f, Screen.height * 0.5f, Screen.width * 0.07f, Screen.height * 0.07f), "Mark [Color]")) {
+			if(GUI.Button(new Rect(Screen.width * 0.25f, Screen.height * 0.5f, Screen.width * 0.07f, Screen.height * 0.07f), "mark [Color]")) {
                 if(!colorval.Equals(""))
                     command[place] += colorval;
-                command[place] = "Mark: " + colorval + ";";
+				command[place] = "mark: " + colorval + ";";
                 place++;
                 GUI.FocusControl(""+place);
             }
@@ -251,12 +251,26 @@ public class Programmable : MonoBehaviour {
             nextStep = Time.time + 0.01f;
         } else if (command [location].Trim ().StartsWith ("if")) {
             string[] ifStr = command [location].Split (' ');
-            bool yes = ((ifStr [2] == "is") || (ifStr [2] == "=="));
-
-        } else if (command [location].Trim ().StartsWith ("Mark:")) {
+			bool yes = false;
+			if((ifStr [2] == "is") || (ifStr [2] == "=="))
+				yes = true;
+			switch(ifStr[1]){
+			case "mark":
+				Debug.Log(Detector.color.ToLower() + " vs. " + ifStr[3] + " -> " + (ifStr[3].ToLower().StartsWith(Detector.color.ToLower()) && yes));
+				if((ifStr[3].ToLower().StartsWith(Detector.color.ToLower()) && yes) || (!ifStr[3].ToLower().StartsWith(Detector.color.ToLower()) && !yes)){
+					Debug.Log("Statement is true");
+				}
+				else {
+					Debug.Log ("Statement is false");
+				}
+				break;
+			case "collide":
+				break;
+			}
+			location++;
+		} else if (command [location].Trim ().StartsWith ("mark:")) {
             string[] colorStr = command [location].Trim ().Split (' ');
             string color = colorStr[1];
-            Debug.Log (color);
             GameObject newMark = GameObject.CreatePrimitive(PrimitiveType.Plane);
             newMark.tag = "Mark";
             newMark.transform.position = new Vector3(gameObject.transform.position.x, 0.01f, gameObject.transform.position.z);

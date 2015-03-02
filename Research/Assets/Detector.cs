@@ -2,8 +2,8 @@
 using System.Collections;
 
 public class Detector : MonoBehaviour {
-	public bool coll;
-    public string color;
+	public static bool coll;
+    public static string color;
 
 	// Use this for initialization
 	void Start () {
@@ -16,7 +16,6 @@ public class Detector : MonoBehaviour {
 
     void OnCollisionEnter (Collision col){
 		coll = true;
-        Debug.Log(col.gameObject.renderer.material.color.ToString());
         if (col.gameObject.renderer.material.color == Color.red)
             color = "Red";
         else if (col.gameObject.renderer.material.color.ToString().Equals("RGBA(1.000, 0.647, 0.000, 1.000)"))
@@ -41,7 +40,6 @@ public class Detector : MonoBehaviour {
             color = "Gray";
         else if (col.gameObject.renderer.material.color == Color.grey)
             color = "Grey";
-        Debug.Log (color);
     }
     
     void OnCollisionExit(Collision col){
