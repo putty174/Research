@@ -7,7 +7,7 @@ public class Detector : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
+		color = "none";
 	}
 	
 	// Update is called once per frame
