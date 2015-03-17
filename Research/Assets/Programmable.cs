@@ -7,7 +7,7 @@ public class Programmable : MonoBehaviour {
 	public bool window = false;
 	private bool reset = true;
 	string[] command;
-	int orders;
+	public int orders;
 	int place;
 	int location;
 	public Vector3 spawn;
@@ -32,7 +32,6 @@ public class Programmable : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		orders = 10;
 		command = new string[orders];
 		for (int i = 0; i < orders; i++)
 						command [i] = "";
@@ -61,7 +60,7 @@ public class Programmable : MonoBehaviour {
 		Camera.main.GetComponent<MouseLook> ().enabled = !window;
 		if (Input.GetKeyDown (KeyCode.Tab)) {
 			window = !window;
-			if(Dialogue.lineNum == 0 && Application.loadedLevelName == "Level1"){
+			if(Dialogue.lineNum == 0 && (Application.loadedLevelName == "Level1" || Application.loadedLevelName == "Level4")){
 				Dialogue.nextLine();
 			}
 		}
